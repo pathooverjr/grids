@@ -1,0 +1,36 @@
+
+{% block initgrid %}
+grid=$('#grid').grid({
+    'title': 'Controls Grid',
+    primaryKey: '{{ primary_id }}',
+    dataSource: '{{ ajax_path~'?action=get' }}',
+    uiLibrary: 'bootstrap4',
+    {# headerFilter: true, #}
+    headerFilter: {
+             type: 'onchange'
+         },
+    resizableColumns: true,
+    columnReorder: true,
+    notFoundText: 'No records found.',
+
+   {#
+    toolbarTemplate: '<div class="row"><div class="col-xs-8" style="line-height:34px">
+    <span data-role="title">Grid Title</span></div><div class="col-xs-4 text-right">
+    <button onclick="grid.reload()" class="btn btn-default">click here to refresh</button></div></div>',
+    inlineEditing: { mode: 'command', managementColumn: true },
+    autoGenerateColumns: true,
+    #}
+     columns: [
+
+{% for field in grid_fields %}
+        {{"{ field: '%s'%s },"|format(field.name,forms.fa(field))|raw }}
+{% endfor %}
+
+{ title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+{ title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+
+{##}
+],
+pager: { limit: 5, sizes: [2, 5, 10, 20] }
+});
+{% endblock %}

@@ -1,0 +1,62 @@
+{% block edit %}
+    function Edit(e)
+    {
+        {% for field in grid_fields %}$('{{ '#'~field.name }}').val({{ 'e.data.'~field.name}});{% endfor %}
+        dialog.open('Edit {{ table_name }}');
+    } // end Edit()
+{% endblock %}
+
+{% block add %}
+    function Add()
+    {
+        {% for field in grid_fields %}$('{{ '#'~field.name }}').val('');{% endfor %}
+        dialog.open('Add {{ table_name }}');
+    } // end Add()
+{% endblock %}
+
+{% block save %}
+    function Save() {
+        var record = { {% for field in grid_fields %}{{ field.name~':' }}$('{{ '#'~field.name }}').val(),{% endfor %} };
+        $.ajax({ url: '{{ ajax_path~'?action=save' }}',
+            data: { record: record },
+            method: 'POST' })
+        .done(function (result, status, xhr) {
+            dialog.close();
+            grid.reload();
+        })
+        .fail(function (xhr, status, error) {
+            var msg = "Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText;
+            alert(msg);
+            dialog.close();
+        });
+    } // end Save()
+{% endblock %}
+
+{% block delete %}
+    function Delete(e) {
+        if (confirm('Are you sure?')) {
+        $.ajax({ url: '{{ ajax_path~'?action=delete' }}', data: {
+        {{ delete_id }}
+        }, method: 'POST' })
+        .done(function () {
+            grid.reload();
+        })
+        .fail(function () {
+            alert('Failed to delete.');
+        });
+        }
+    }  // end Delete()
+{% endblock %}
+
+{% block hrefRenderer %}
+    var hrefRenderer = function (value, record, $cell, $displayEl) {
+        $cell.css('font-style', 'italic');
+        $displayEl.css('background-color', '#EEE');
+        //if()
+        //{
+        //var href = $("<a></a>").attr('href',value).text(value);
+        //$displayEl.innerHTML(href);
+        //   $displayEl.append(value);
+        //}
+    };
+{% endblock %}

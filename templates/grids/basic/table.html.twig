@@ -1,0 +1,54 @@
+{% extends '@basic/grid.html.twig' %}
+
+{% import _self as forms %}
+
+{% macro fa(field) %}
+    {% for key, val in field %}
+        {% if key != 'name' %}
+        {{ ", %s:%s"|format(key,val)|raw }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% block search %}
+<form class="form-inline">
+    {%~ for field in search_fields %}
+        <input id="txt{{ field.name }}" type="text" placeholder="{{ field.name }}..." class="form-control mb-2 mr-sm-2 mb-sm-0"/>
+    {%~ endfor %}
+    <button class="btn btn-default" id="btnSearch" type="button">Search</button>
+    &nbsp;
+    <button class="btn btn-default" id="btnClear" type="button">Clear</button>
+</form>
+{%  endblock %}
+
+
+{% block newrecord ~%}
+<div id="dialog" style="display: none">
+    <form>
+        <input id="{{primary_id}}" type="hidden"/>
+        {%~ for field in grid_fields %}
+            {%~ if field.name != '{{primary_id}}' %}
+        <div class="form-group">
+            <label for="{{ field.name }}">{{ field.name }}</label>
+            <input type="text" class="form-control" id="{{ field.name }}">
+        </div>
+            {%~ endif -%}
+        {%~ endfor %}
+        <button class="btn btn-default" id="btnSave" type="button">Save</button>
+        <button class="btn btn-default" id="btnCancel" type="button">Cancel</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block toolbar %}
+            <div class="row">
+                <div class="col-9">
+                    {{ block('search') }}
+                </div>
+                <div class="col-3">
+                {% block new_record_btn %}
+                    <button class="btn btn-default pull-right" id="btnAdd" type="button">Add New Record</button>
+                {%  endblock %}
+                </div>
+            </div>
+{%  endblock %}

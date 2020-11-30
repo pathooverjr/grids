@@ -1,0 +1,27 @@
+{
+    "name": "pathooverjr/grids",
+    "description": "Usage of JQuery Grid with Bootstrap 4",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Patrick A. Hoover Jr",
+            "email": "pathooverjr@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "twig/twig": "9999999-dev",
+        "monolog/monolog": "2.x-dev",
+        "symfony/dotenv": "9999999-dev",
+        "symfony/dom-crawler": "9999999-dev",
+        "symfony/css-selector": "9999999-dev",
+        "fabpot/goutte": "9999999-dev",
+        "tracy/tracy": "v3.0.x-dev"
+    }
+}

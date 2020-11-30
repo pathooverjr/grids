@@ -1,0 +1,53 @@
+{% extends '@config/gridbase.html.twig' %}
+{#  grid_base variables and blocks
+    variables
+        title
+    blocks
+        meta
+        head_script_tag
+            jquery
+            gijgo_js
+        head_css    link and style tags
+            gijgo_css
+            bootstrap_css
+            font_awesome_css
+        grid_js
+            declarations
+            docready 
+        grid
+    grid_admin
+    variables
+    blocks
+        grid_toolbar
+            grid_toolbar_left
+            grid_toolbar_right
+        grid
+        grid_dialog
+#}
+{% import _self as forms %}
+
+
+{% block grid_toolbar %}
+    <div class="col-9">
+    {% block grid_toolbar_left %}{% endblock %}
+    </div>
+    <div class="col-3">
+    {% block grid_toolbar_right %}{% endblock %}
+    </div>
+{% endblock grid_toolbar %}
+
+{% block grid %}
+<div class="container-fluid">
+    <div class="row">
+    {{ block('grid_toolbar') }}
+    </div>
+    <div class="row" style="margin-top: 10px">
+        <div class="col-12">
+            <table id="grid"></table>
+        </div>
+    </div>
+</div>
+{% block grid_dialog %}{% endblock %}
+{% endblock grid %}
+
+{% macro fa(field) %}{% for key, val in field %}{% if key != 'name' %} {{ ", %s:'%s'"|format(key,val)|raw }} {% endif %}{% endfor %}{% endmacro %}

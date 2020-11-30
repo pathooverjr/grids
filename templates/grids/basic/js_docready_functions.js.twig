@@ -1,0 +1,18 @@
+{% block onadd %}
+    $('#btnAdd').on('click', Add);
+{% endblock %}
+
+{% block onsearch %}
+    $('#btnSearch').on('click', function () {
+        grid.reload({ {% for field in search_fields %}{{ field.name }}: $('#txt{{ field.name }}').val(),{% endfor %} });
+    });
+{% endblock %}
+
+{% block onclear %}
+    $('#btnClear').on('click', function () {
+    {%~ for field in grid_fields %}
+        $('#txt{{ field.name }}').val('');
+    {%~ endfor %}
+        grid.reload({ {% for field in search_fields %}{{ field.name }}: '',{% endfor %}});
+    });
+{% endblock %}

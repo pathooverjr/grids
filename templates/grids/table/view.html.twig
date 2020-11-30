@@ -1,0 +1,11 @@
+{% extends '@table/grid.html.twig' %}
+
+
+{% block displaygrid %}
+$('#{{ grid.id }}').grid({
+        {% for prop, value in grid.config %}
+        {{ prop }}: '{{ value }}',
+        {% endfor %}
+        columns: {{ grid.columns|raw }}
+    });
+{% endblock %}

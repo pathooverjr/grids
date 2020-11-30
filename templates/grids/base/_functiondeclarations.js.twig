@@ -1,0 +1,17 @@
+{% block fnGridSuccess %}
+function GridSuccess(result, status, xhr)
+{
+    if (result.error) {
+        // handle the error
+        throw result.error.msg;
+    }
+    grid.reload();
+}
+{% endblock %}
+
+{% block fnGridError %}
+function GridError(xhr, status, error)
+{
+
+}
+{% endblock %}

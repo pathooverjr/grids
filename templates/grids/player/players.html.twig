@@ -1,0 +1,101 @@
+{% extends 'grid_base_player.html.twig' %}
+
+{% set fields =
+ [
+    { 'name' : 'ID', 'width' : 48 },
+    { 'name' : 'Name', 'sortable' : true },
+    { 'name' : 'PlaceOfBirth', 'title' : 'Place Of Birth', 'sortable' : true }
+ ]
+%}
+
+{% block edit %}
+    {% for field in fields %}
+        $('{{ '#'~field.name }}').val({{ 'e.data.'~field.name}});
+    {% endfor %}
+dialog.open('Edit Player');
+{% endblock %}
+
+{% block save %}
+    {% for field in fields %}
+     {{ field.name~':' }} $('{{ '#'~field.name }}').val(),
+    {% endfor %}
+{% endblock %}    
+ 
+{% block getfields %}
+{% for field in fields %}
+    { 
+    {% for key, val in field %}
+        {% if key == 'name' %} field: '{{ val }}' 
+        {% else %}
+        , {{ key }}: {{ val }}
+        {% endif %}    
+    {% endfor %}
+    }, 
+{% endfor %}
+
+{% endblock %} 
+ 
+{% block onadd %}
+{% for field in fields %}
+     $('{{ '#'~field.name }}').val('');
+    {% endfor %}
+dialog.open('Add Player');
+{% endblock %}
+
+{% set searchfields =
+    [
+        { 'name': 'Name'},
+        { 'name': 'PlaceOfBirth'}
+    ]
+%}
+
+{% block onsearch %}
+grid.reload({ 
+    {% for field in searchfields %}
+    {{ field.name }}: $('#txt{{ field.name }}').val(), 
+    {% endfor %}    
+    });
+{% endblock %}
+
+{% block onclear %}
+    {% for field in searchfields %}
+    $('#txt{{ field.name }}').val('');
+    {% endfor %}  
+
+grid.reload({ 
+            {% for field in searchfields %}
+                {{ field.name }}: '', 
+            {% endfor %}
+            });
+{% endblock %}
+   
+
+{% block search %}
+    <form class="form-inline">
+        {% for field in searchfields %}
+         <input id="txt{{ field.name }}" type="text" placeholder="{{ field.name }}..." class="form-control mb-2 mr-sm-2 mb-sm-0" />
+        {% endfor %}       
+        <button id="btnSearch" type="button" class="btn btn-default">Search</button> &nbsp;
+        <button id="btnClear" type="button" class="btn btn-default">Clear</button>
+    </form>
+{%  endblock %}    
+           
+
+{% block newrecord %}
+<div id="dialog" style="display: none">
+    <input type="hidden" id="ID" />
+    <form>
+        {% for field in fields %}
+            {% if field.name != 'ID' %}
+            <div class="form-group">
+                <label for="{{ field.name }}">{{ field.name }}</label>
+                <input type="text" class="form-control" id="{{ field.name }}">
+            </div>
+            {% endif %}
+        {% endfor %}        
+        <button type="button" id="btnSave" class="btn btn-default">Save</button>
+        <button type="button" id="btnCancel" class="btn btn-default">Cancel</button>
+    </form>
+</div>  
+{% endblock %} 
+

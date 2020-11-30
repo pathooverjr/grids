@@ -1,0 +1,125 @@
+{% extends '@base/grid_base.html.twig' %}
+
+{% import _self as forms %}
+
+{% block docready %}
+
+    {% block docready_defgrid %}
+    grid=$('#grid').grid({
+        primaryKey: 'ID',
+        dataSource: '{{ ajax_path~'?action=get' }}',
+        uiLibrary: 'bootstrap4',
+        columns: [
+    {% for field in grid_fields %}{{"{ field: '%s'%s },"|format(field.name,forms.fa(field))|raw }}{% endfor %}
+    { title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+    { title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+    ],
+    pager: { limit: 5, sizes: [2, 5, 10, 20] }
+    });
+    {% endblock %}
+
+    {% block docready_defdialog %}
+    dialog=$('#dialog').dialog({
+        uiLibrary: 'bootstrap4',
+        iconsLibrary: 'fontawesome',
+        autoOpen: false,
+        resizable: false,
+        modal: true
+    });
+    {% endblock %}
+
+    {% block onadd %}
+    $('#btnAdd').on('click', Add);
+    {% endblock %}
+
+    {% block onsearch %}
+    $('#btnSearch').on('click', function () {
+    grid.reload({ {% for field in grid_toolbar_search_fields %}{{ field.name }}: $('#txt{{ field.name }}').val(),{% endfor %} });
+    });
+    {% endblock %}
+
+    {% block onclear %}
+    $('#btnClear').on('click', function () {
+    {% for field in grid_toolbar_search_fields %}
+    $('#txt{{ field.name }}').val('');
+    {% endfor %}
+    grid.reload({ {% for field in grid_toolbar_search_fields %}{{ field.name }}: '',{% endfor %}});
+    });
+    {% endblock %}
+    {% block onsave %}
+    $('#btnSave').on ('click', Save);
+    {% endblock %}
+    {% block oncancel %}
+    $('#btnCancel').on ('click', function () { dialog.close (); });
+    {% endblock %}
+
+{% endblock docready %}
+
+{% block declarations %}
+var grid,dialog;
+{% block fnedit %}
+function Edit(e)
+{
+{% for field in grid_fields %}$('{{ '#'~field.name }}').val({{ 'e.data.'~field.name}});{% endfor %}
+dialog.open('Edit {{ table_name }}');
+}
+{% endblock %}
+
+{% block fnadd %}
+function Add()
+{
+{% for field in grid_fields %}$('{{ '#'~field.name }}').val('');{% endfor %}
+dialog.open('Add {{ table_name }}');
+}
+{% endblock %}
+
+{% block fnsave %}
+function Save() {
+var record = { {% for field in grid_fields %}{{ field.name~':' }}$('{{ '#'~field.name }}').val(),{% endfor %} };
+$.ajax({ url: '{{ ajax_path~'?action=save' }}',
+    data: { record: record },
+    method: 'POST' })
+.done(function (result, status, xhr) {
+    dialog.close();
+    grid.reload();
+})
+.fail(function (xhr, status, error) {
+    var msg = "Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText;
+    alert(msg);
+    dialog.close();
+});
+}
+{% endblock %}
+
+{% block fndelete %}
+function Delete(e) {
+    if (confirm('Are you sure?')) {
+    $.ajax({ url: '{{ ajax_path~'?action=delete' }}', data: {
+    {{ delete_id }}
+    }, method: 'POST' })
+    .done(function (result, status, xhr) {
+         if (result.error) {
+            // handle the error
+            throw result.error.msg;
+        }
+        grid.reload();
+    })
+    .fail(function (xhr, status, error) {
+        alert('Failed to delete.');
+    });
+    }
+}
+{% endblock %}
+{% endblock declarations %}
+
+{% block grid_toolbar %}
+    <div class="col-9">
+    {% block grid_toolbar_left %}{% endblock %}
+    </div>
+    <div class="col-3">
+    {% block grid_toolbar_right %}{% endblock %}
+    </div>
+{% endblock grid_toolbar %}
+
+
+{% macro fa(field) %}{% for key, val in field %}{% if key != 'name' %} {{ ", %s:'%s'"|format(key,val)|raw }} {% endif %}{% endfor %}{% endmacro %}

@@ -1,0 +1,10 @@
+{% import '@base/_macros.twig' as macros %}
+
+
+{% block grid_columns %}
+[
+    {% for field in grid_fields %}{{"{ field: '%s'%s },"|format(field.name,macros.fa(field))|raw }}{% endfor %}
+    { title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+    { title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+]
+{% endblock %}

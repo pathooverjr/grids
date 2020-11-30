@@ -1,0 +1,2 @@
+
+{% macro fa(field) %}{% for key, val in field %}{% if key != 'name' %} {{ ", %s:'%s'"|format(key,val)|raw }} {% endif %}{% endfor %}{% endmacro %}

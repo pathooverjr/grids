@@ -1,0 +1,348 @@
+{% extends '@config/grid_admin.html.twig' %}
+{#  grid_base variables and blocks
+    variables
+        title
+    blocks
+        meta
+        head_script_tag
+            jquery
+            gijgo_js
+        head_css    link and style tags
+            gijgo_css
+            bootstrap_css
+            font_awesome_css
+        grid_js
+            declarations
+            docready
+        grid
+
+    grid_admin
+    variables
+    blocks
+        grid_toolbar
+            grid_toolbar_left
+            grid_toolbar_right
+        grid
+        grid_dialog
+    table
+    variables
+        control_declarations - array of control names
+        delete_id - primary id
+        primary_id - primary id
+    blocks
+        declarations - uses parent
+            local_declarations
+        docready - uses parent
+            local_docready
+        grid                - uses parent
+            config_toolbar
+                config_toolbar_table_dropdown
+                config_toolbar_right
+            controls_toolbar
+                controls_toolbar_left
+                controls_toolbar_right
+            controldetails_toolbar
+                controldetails_toolbar_left
+                controldetails_toolbar_right
+        grid_dialog
+        grid_toolbar_table_dropdown
+        grid_toolbar_left
+        grid_toolbar_right
+            grid_toolbar_addrecord
+
+#}
+{% block local_declarations %}
+/*
+var grid, controlsgrid, controldetailsgrid;
+var dialog;
+var tablesDropDown;
+var typeDropDown;
+var gridDetails;
+*/
+{% for control in control_declarations %}
+var {{ control_declarations }};
+{% endfor %}
+
+function AddFieldConfig(e)
+{
+
+var xid = grid.getSelected();
+if(!xid) {
+    alert('Please select a field row, first.');
+    return;
+}
+
+}
+
+function AddControlDetails(e)
+{
+    var xid = grid.getSelected();
+    if(!xid) {
+        alert('Please select a field row, first.');
+        return;
+    }
+    dialog.open('Add Control');
+    $('#xid').val(xid);
+
+    typeDropDown = $('#typedropdown').dropdown(
+    {
+        width: 200,
+        dataSource: '/grids/actions/ajax/controlselect.php',
+        textField: 'type',
+        valueField: 'xid'
+    });
+}
+
+
+function TableSelect(e)
+{
+
+    var jqxhr = $.post("/grids/actions/ajax/tableinfogrid.php",
+                        { tblname: $(this).val() })
+    .done(function( data ) {
+
+    });
+}
+
+function AddFieldConfig(e)
+{
+    var xid = $('#xid').val();
+    var type = typeDropDown.val();
+    var data = { 'xid':xid,'type':type };
+    var jqxhr = $.post("/grids/actions/ajax/insertcontroldetails.php",
+                        data)
+    .done(function( data ) {
+        alert(data);
+    });
+    dialog.close();
+    // Update controlsgrid
+
+}
+
+
+function OpenControlDetails(e)
+{
+    var xid = $('#xid').val();
+    var type = typeDropDown.val();
+
+    dialog.close();
+    // Update controlsgrid
+    controlsgrid.reload({ 'type':type });
+}
+
+function Edit(e)
+{
+
+}
+function Delete(e)
+{
+ if (confirm('Are you sure? '+ e.data.id +'?')) {
+    $.ajax({ url: '/grids/actions/ajax/deletetabledetails.php', data: {
+    {{ primary_id }}: e.data.id
+    }, method: 'POST' })
+    .done(function (result, status, xhr) {
+         if (result.error) {
+            // handle the error
+            throw result.error.msg;
+        }
+        grid.reload();
+    })
+    .fail(function (xhr, status, error) {
+        alert('Failed to delete.');
+    });
+    }
+}
+{% endblock %}
+
+{% block local_docready %}
+
+$('#btnAdd').on('click', AddControlDetails);
+$('#btnAddControl').on ('click', OpenControlDetails);
+$('#btnAddConfig').on('click', AddFieldConfig);
+
+
+dialog=$('#dialog').dialog({
+    uiLibrary: 'bootstrap4',
+    iconsLibrary: 'fontawesome',
+    autoOpen: false,
+    resizable: false,
+    modal: true
+});
+
+tablesDropdown=$('#Tables').dropdown({
+    dataSource: '/grids/actions/ajax/tableselect.php',
+    textField: 'TABLE_NAME',
+    valueField: 'TABLE_NAME',
+    change: TableSelect
+});
+
+grid=$('#grid').grid({
+        primaryKey: 'xid',
+        dataSource: '/grids/actions/ajax/gettabledetails.php',
+        uiLibrary: 'bootstrap4',
+        inlineEditing: { mode: 'command' },
+        columns: [
+        { field: 'xid', title:'XID', type:'text' },
+        { field: 'tblname', title:'TBLNAME', type:'text', editor: true  },
+        { field: 'colname', title:'COLNAME', type:'text', editor: true  },
+        { field: 'native_type', title:'NATIVETYPE', type:'text', editor: true  },
+        { field: 'len', title:'Len', type:'text', editor: true  },
+        { field: 'controlname', title:'CTRLNAME', type: 'dropdown',
+            editField: 'controlid',
+            editor: { dataSource: '/grids/actions/ajax/controlselect.php', textField: 'type', valueField: 'type' }
+        }],
+        pager: { limit: 5, sizes: [2, 5, 10, 20] }
+});
+
+controlsgrid=$('#controlsgrid').grid({
+        primaryKey: 'xid',
+        dataSource: '/grids/actions/ajax/getcontroldetails.php',
+        uiLibrary: 'bootstrap4',
+        selectionType: 'multiple',
+        selectionMethod: 'checkbox',
+        columns: [
+        { field: 'xid', title:'XID', width:'60' },
+        { field: 'name', title:'NAME', type:'text' },
+        { field: 'desc', title:'DESCRIPTION', type:'text' },
+        { field: 'category', title:'CATEGORY', type:'text' },
+        { field: 'href', title:'HREF', type:'text' }
+        ],
+        pager: { limit: 5, sizes: [2, 5, 10, 20] }
+        });
+
+controldetailsgrid=$('#controldetailsgrid').grid({
+        primaryKey: 'xid',
+        dataSource: '/grids/actions/ajax/getcontroldetails.php',
+        uiLibrary: 'bootstrap4',
+        selectionType: 'multiple',
+        selectionMethod: 'checkbox',
+        columns: [
+        { field: 'xid', title:'XID', width:'40' },
+        { field: 'name', title:'NAME', type:'text' },
+        { field: 'desc', title:'DESCRIPTION', type:'text' },
+        { field: 'category', title:'CATEGORY', type:'text' },
+        { field: 'href', title:'HREF', type:'text' }
+        ],
+        pager: { limit: 5, sizes: [2, 5, 10, 20] }
+        });
+{% endblock %}
+
+
+
+{% block config_toolbar_table_dropdown %}
+<form class="form-inline">
+    <select id="Tables" width="40%" placeholder="Tables..."></select>
+</form>
+{% endblock %}
+
+{% block config_toolbar_right %}{% endblock %}
+
+{% block config_toolbar %}
+    <div class="col-9">
+    {{ block('config_toolbar_table_dropdown') }}
+    </div>
+    <div class="col-3">
+    {{ block('config_toolbar_right') }}
+    </div>
+{% endblock %}
+
+{% block controls_toolbar_left %}{% endblock %}
+
+{% block controls_toolbar_right %}
+<button class="btn btn-default pull-right" id="btnAddConfig" type="button">Add All Selected Configs</button>
+{% endblock %}
+
+{% block controls_toolbar %}
+    <div class="col-9">
+    {{ block('controls_toolbar_left') }}
+    </div>
+    <div class="col-3">
+    {{ block('controls_toolbar_right') }}
+    </div>
+{% endblock %}
+
+{% block controldetails_toolbar_left %}{% endblock %}
+{% block controldetails_toolbar_right %}{% endblock %}
+
+{% block controldetails_toolbar %}
+    <div class="col-9">
+    {{ block('controldetails_toolbar_left') }}
+    </div>
+    <div class="col-3">
+    {{ block('controldetails_toolbar_right') }}
+    </div>
+{% endblock %}
+
+{% block grid_dialog %}
+<div id="dialog" style="display: none">
+    <input id="xid" name="xid" type="hidden"/>
+    <form>
+        <div class="form-group">
+            <label for="typedropdown">Control Type</label>
+            <input type="dropdown" class="form-control" id="typedropdown">
+        </div>
+        <button class="btn btn-default" id="btnAddControl" type="button">Add</button>
+        <button class="btn btn-default" id="btnCancel" type="button" onclick="dialog.close()">Cancel</button>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block grid %}
+    <div class="container-fluid">
+        <div class="row">
+        {{ block('config_toolbar') }}
+        </div>
+    </div>
+    {{ parent() }}
+    <div class="container-fluid">
+        <div class="row">
+        {{ block('controls_toolbar') }}
+        </div>
+        <div class="row" style="margin-top: 10px">
+            <div class="col-12">
+                <table id="controlsgrid"></table>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+        {{ block('controldetails_toolbar') }}
+        </div>
+        <div class="row" style="margin-top: 10px">
+            <div class="col-12">
+                <table id="controldetailsgrid"></table>
+            </div>
+        </div>
+    </div>
+{% endblock grid %}
+
+
+
+{% block declarations %}
+    {{ block('local_declarations') }}
+    {{ parent() }}
+{% endblock declarations %}
+
+{% block docready %}
+    {{ block('local_docready') }}
+    {{ parent() }}
+{% endblock docready %}
+
+
+{% block grid_toolbar_table_dropdown %}
+<form class="form-inline">
+    <select id="Tables" width="40%" placeholder="Tables..."></select>
+</form>
+{% endblock %}
+
+
+{% block grid_toolbar_addrecord %}
+<button class="btn btn-default pull-right" id="btnAdd" type="button">Add Control</button>
+{% endblock %}
+
+{% block grid_toolbar_left %}{% endblock %}
+
+{% block grid_toolbar_right %}
+    {{ block('grid_toolbar_addrecord') }}
+{% endblock %}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bootstrap 4 Table</title>
+    <meta charset="utf-8" />
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+    <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    {% block grid_js %}
+    <script type="text/javascript">
+    var grid, dialog;
+function Edit(e) {
+    {% block edit %}
+    $('#ID').val(e.data.id);
+    $('#Name').val(e.data.record.Name);
+    $('#PlaceOfBirth').val(e.data.record.PlaceOfBirth);
+    dialog.open('Edit Player');
+    {% endblock %}
+}
+function Save() {
+    var record = {
+        {% block save %}
+        ID: $('#ID').val(),
+        Name: $('#Name').val(),
+        PlaceOfBirth: $('#PlaceOfBirth').val()
+        {% endblock %}
+    };
+    {% set ajax_path='/grids/gridtestajax.php' %}
+    $.ajax({ url: '{{ ajax_path~'?action=save' }}', data: { record: record }, method: 'POST' })
+        .done(function () {
+            dialog.close();
+            grid.reload();
+        })
+        .fail(function () {
+            alert('Failed to save.');
+            dialog.close();
+        });
+}
+function Delete(e) {    
+    if (confirm('Are you sure?')) {
+        {% set delete_id='id: e.data.id' %}
+        $.ajax({ url: '{{ ajax_path~'?action=delete' }}', data: { {{ delete_id }} }, method: 'POST' })
+            .done(function () {
+                grid.reload();
+            })
+            .fail(function () {
+                alert('Failed to delete.');
+            });
+    }
+}
+function initGrid() {        
+        return $('#grid').grid({
+        primaryKey: 'ID',
+        dataSource: '{{ ajax_path~'?action=get' }}',
+        uiLibrary: 'bootstrap4',
+        columns: [
+            {% block fields %}
+            { field: 'ID', width: 48 },
+            { field: 'Name', sortable: true },
+            { field: 'PlaceOfBirth', title: 'Place Of Birth', sortable: true },
+            {% endblock %}
+            { title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+            { title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+        ],
+        pager: { limit: 5, sizes: [2, 5, 10, 20] }
+    });
+    }
+$(document).ready(function () {
+
+    grid = initGrid();
+
+    dialog = $('#dialog').dialog({
+        uiLibrary: 'bootstrap4',
+        iconsLibrary: 'fontawesome',
+        autoOpen: false,
+        resizable: false,
+        modal: true
+    });
+    $('#btnAdd').on('click', function () {
+        {% block onadd %}
+        $('#ID').val('');
+        $('#Name').val('');
+        $('#PlaceOfBirth').val('');
+        dialog.open('Add Player');
+        {% endblock %}
+    });
+    $('#btnSave').on('click', Save);
+    $('#btnCancel').on('click', function () {
+        dialog.close();
+    });
+    $('#btnSearch').on('click', function () {
+        {% block onsearch %}
+        grid.reload({ name: $('#txtName').val(), placeOfBirth: $('#txtPlaceOfBirth').val() });
+        {% endblock %}
+    });
+    $('#btnClear').on('click', function () {
+        {% block onclear %}
+        $('#txtName').val('');
+        $('#txtPlaceOfBirth').val('');
+        grid.reload({ name: '', placeOfBirth: '' });
+        {% endblock %}
+    });
+});</script>
+    {% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-9">
+            {% block search %}
+                
+            {%  endblock %}    
+            </div>
+            <div class="col-3">
+                <button id="btnAdd" type="button" class="btn btn-default pull-right">Add New Record</button>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 10px">
+            <div class="col-12">
+                <table id="grid"></table>
+            </div>
+        </div>
+    </div>
+
+    {% block newrecord %}
+    
+    {% endblock %} 
+</body>
+</html>

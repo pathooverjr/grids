@@ -1,0 +1,57 @@
+{% extends '@base/grid_base.html.twig' %}
+{#  grid_base variables and blocks
+    variables
+        title
+    blocks
+        meta
+        head_script_tag
+            jquery
+            gijgo_js
+        head_css    link and style tags
+            gijgo_css
+            bootstrap_css
+            font_awesome_css
+        grid_js
+            js_declarations
+            js_docready
+        grid
+#}
+{% import _self as forms %}
+
+
+{% block js_declarations %}
+{{ include('@basic/js_grid_control.js.twig') }}
+{{ include('@basic/js_function_declarations.js.twig') }}
+{{ include('@basic/js_control_declarations.js.twig') }}
+{#-
+{% for control in control_declarations %}
+var {{ control }};
+{% endfor %}
+#}
+{{ parent() }}
+{% endblock js_declarations %}
+
+{% block js_docready %}
+{{ include('@basic/js_docready_functions.js.twig') }}
+{{ parent() }}
+{% endblock js_docready %}
+
+{% macro fa(field) %}
+    {% for key, val in field %}
+        {% if key != 'name' %}
+            {{ ", %s:%s"|format(key,val)|raw }}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% block grid %}
+        <div class="container-fluid">
+        {% block toolbar %}{%  endblock %}
+            <div class="row" style="margin-top: 10px">
+                <div class="col-12">
+                    <table id="grid"></table>
+                </div>
+            </div>
+        </div>
+        {% block newrecord %}{% endblock %}
+{% endblock grid %}

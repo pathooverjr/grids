@@ -1,0 +1,28 @@
+{% extends '@table/base.html.twig' %}
+
+{# Defined in base.html.twig
+# Blocks:
+# head_js
+#   -js_declarations
+#   -js_docready
+# grid : defined inside the body tags
+#   -grid_nav
+#       -grid_nav_left
+#       -grid_nav_right
+#   -grid_table : id="grid"
+# Twig Variables:
+# title : html page title
+#}
+
+{% block js_declarations %}
+
+{% endblock %}
+
+{% block js_docready %}
+{% block displaygrid %}{% endblock %}
+{% endblock %}
+
+{% block grid %}
+{{ parent() }}
+{% block dialog %}{% endblock %}
+{% endblock %}

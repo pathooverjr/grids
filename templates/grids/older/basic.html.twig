@@ -1,0 +1,150 @@
+{% extends 'grid_base_start.html.twig' %}
+
+{% import _self as forms %} 
+
+{% macro fa(field) %}
+{% for key, val in field %}{% if key != 'name' %}{{ ", %s:'%s'"|format(key,val)|raw }}{% endif %}{% endfor %}
+{% endmacro %}
+
+{% block initgrid %}
+        grid = $('#grid').grid({
+        primaryKey: 'ID',
+        dataSource: '{{ ajax_path~'?action=get' }}',
+        uiLibrary: 'bootstrap4',
+        columns: [
+            {% for field in fields %}    
+            {{ "{ field: '%s'%s },"|format(field.name,forms.fa(field))|raw }}    
+            {% endfor %}
+            { title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+            { title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+        ],
+        pager: { limit: 5, sizes: [2, 5, 10, 20] }
+    });
+{% endblock %}
+
+{% block dialog %}
+    dialog = $('#dialog').dialog({
+        uiLibrary: 'bootstrap4',
+        iconsLibrary: 'fontawesome',
+        autoOpen: false,
+        resizable: false,
+        modal: true
+    });
+{% endblock %}
+
+{% block edit %}
+function Edit(e) 
+{   
+    {% for field in fields %}
+        $('{{ '#'~field.name }}').val({{ 'e.data.'~field.name}});
+    {% endfor %}
+    dialog.open('Edit {{ table_name }}');
+}
+{% endblock %}
+
+{% block add %}
+function Add() 
+{
+{% for field in fields %}$('{{ '#'~field.name }}').val('');
+{% endfor %}
+dialog.open('Add {{ table_name }}'); 
+}
+{% endblock %}
+
+{% block save %}
+function Save() {       
+    var record = {  
+    {% for field in fields %}
+     {{ field.name~':' }} $('{{ '#'~field.name }}').val(),
+    {% endfor %}
+    };
+    $.ajax({ url: '{{ ajax_path~'?action=save' }}', 
+            data: { record: record }, 
+            method: 'POST' })
+        .done(function (result, status, xhr) {
+            dialog.close();
+            grid.reload();
+        })
+        .fail(function (xhr, status, error) {
+            var msg = "Result: " + status + " " + error + " " + xhr.status + " " + xhr.statusText;
+            alert(msg);
+            dialog.close();
+        });
+    }
+{% endblock %}    
+
+{% block delete %}
+function Delete(e) {    
+    if (confirm('Are you sure?')) {
+        {% set delete_id='id: e.data.id' %}
+        $.ajax({ url: '{{ ajax_path~'?action=delete' }}', data: { {{ delete_id }} }, method: 'POST' })
+            .done(function () {
+                grid.reload();
+            })
+            .fail(function () {
+                alert('Failed to delete.');
+            });
+    }
+}
+{% endblock %}
+
+{% block onadd %}
+$('#btnAdd').on('click', Add);
+{% endblock %}
+
+
+
+{% block onsearch %}
+$('#btnSearch').on('click', function () {   
+grid.reload({ 
+    {% for field in searchfields %}
+    {{ field.name }}: $('#txt{{ field.name }}').val(), 
+    {% endfor %}    
+    }); 
+});
+{% endblock %}
+
+{% block onclear %}
+$('#btnClear').on('click', function () {
+    {% for field in searchfields %}
+    $('#txt{{ field.name }}').val('');
+    {% endfor %}  
+ 
+grid.reload({ 
+            {% for field in searchfields %}
+                {{ field.name }}: '', 
+            {% endfor %}
+            });
+});
+{% endblock %}
+   
+
+{% block search %}
+    <form class="form-inline">
+        {% for field in searchfields %}
+         <input id="txt{{ field.name }}" type="text" placeholder="{{ field.name }}..." class="form-control mb-2 mr-sm-2 mb-sm-0" />
+        {% endfor %}       
+        <button id="btnSearch" type="button" class="btn btn-default">Search</button> &nbsp;
+        <button id="btnClear" type="button" class="btn btn-default">Clear</button>
+    </form>
+{%  endblock %}    
+           
+
+{% block newrecord %}
+<div id="dialog" style="display: none">
+    <input type="hidden" id="ID" />
+    <form>
+        {% for field in fields %}
+            {% if field.name != 'ID' %}
+            <div class="form-group">
+                <label for="{{ field.name }}">{{ field.name }}</label>
+                <input type="text" class="form-control" id="{{ field.name }}">
+            </div>
+            {% endif %}
+        {% endfor %}        
+        <button type="button" id="btnSave" class="btn btn-default">Save</button>
+        <button type="button" id="btnCancel" class="btn btn-default">Cancel</button>
+    </form>
+</div>  
+{% endblock %} 
+
